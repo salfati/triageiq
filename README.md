@@ -2,7 +2,7 @@
 
 **An AI-assisted support ticket triage & draft-reply concept — PRD, eval design, and a clickable prototype.**
 
-> Live demo: *(add your GitHub Pages link here once published — see "Publish this repo" below)*
+> Live demo: [salfati.github.io/triageiq/demo/](https://salfati.github.io/triageiq/demo/) · Repo: [github.com/salfati/triageiq](https://github.com/salfati/triageiq)
 
 ## The problem
 
@@ -12,7 +12,7 @@ Support agents spend a large share of their day on two repetitive steps before t
 
 TriageIQ classifies an incoming ticket by category and urgency, and drafts a suggested first reply — with the agent always in the loop. Nothing is ever sent automatically; the agent accepts, edits, or rejects every draft.
 
-**[Try the prototype →](demo/index.html)** (open locally, or via the live link above once this repo is published)
+**[Try the prototype →](https://salfati.github.io/triageiq/demo/)**
 
 ## My role
 
@@ -45,18 +45,14 @@ No install, no build step, no API key required.
 1. Download or clone this repo.
 2. Open `demo/index.html` directly in any browser (double-click it, or drag it into a browser window).
 
-## Publish this repo
+## Updating this repo
 
-To push this to your own GitHub and get a shareable live link for your resume/LinkedIn:
+After editing any file, publish the change with:
 
 ```bash
-cd triageiq
-git init
 git add .
-git commit -m "Initial commit: TriageIQ concept prototype"
-git branch -M main
-git remote add origin https://github.com/<your-username>/triageiq.git
-git push -u origin main
+git commit -m "Describe the change"
+git push
 ```
 
-Then, on GitHub: **Settings → Pages → Deploy from a branch → `main` / `/ (root)` → Save.** After a minute, GitHub gives you a live URL (something like `https://<your-username>.github.io/triageiq/demo/`) — drop that link into the README badge above and onto your resume.
+GitHub Pages rebuilds the live demo automatically within a minute or two of each push to `main`.
