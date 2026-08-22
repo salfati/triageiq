@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TriageIQ — AI Ticket Triage Prototype</title>
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --panel: #ffffff;
+    --border: #e2e5ec;
+    --text: #1b1f27;
+    --muted: #667085;
+    --brand: #4f46e5;
+    --brand-soft: #eef0fe;
+    --low: #16a34a;
+    --medium: #d97706;
+    --high: #dc2626;
+    --low-bg: #eafaf0;
+    --medium-bg: #fef6e8;
+    --high-bg: #fdecec;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px 16px 64px;
+  }
+  .wrap {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  header {
+    margin-bottom: 24px;
+  }
+  header .eyebrow {
+    color: var(--brand);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  header h1 {
+    margin: 4px 0 6px;
+    font-size: 28px;
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    max-width: 640px;
+    line-height: 1.5;
+  }
+  .badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 4px 10px;
+    background: var(--brand-soft);
+    color: var(--brand);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 800px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .panel h2 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .presets button {
+    background: var(--brand-soft);
+    color: var(--brand);
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .presets button:hover { filter: brightness(0.95); }
+  textarea {
+    width: 100%;
+    min-height: 140px;
+    resize: vertical;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+  }
+  .actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+  }
+  .primary-btn {
+    background: var(--brand);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .primary-btn:hover { filter: brightness(1.05); }
+  .ghost-btn {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .result-empty {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .tag {
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .tag.category {
+    background: var(--brand-soft);
+    color: var(--brand);
+  }
+  .tag.urgency-low { background: var(--low-bg); color: var(--low); }
+  .tag.urgency-medium { background: var(--medium-bg); color: var(--medium); }
+  .tag.urgency-high { background: var(--high-bg); color: var(--high); }
+  .why {
+    font-size: 12.5px;
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 14px;
+  }
+  .draft-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 6px;
+  }
+  .draft {
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+  .draft-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+  }
+  .draft-actions button {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .draft-actions button.accept { color: var(--low); border-color: var(--low-bg); }
+  .draft-actions button.reject { color: var(--high); border-color: var(--high-bg); }
+  .feedback-note {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  footer {
+    margin-top: 28px;
+    font-size: 12.5px;
+    color: var(--muted);
+    text-align: center;
+  }
+  footer a { color: var(--brand); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">TriageIQ · v0 prototype</div>
+    <h1>AI-assisted ticket triage &amp; draft reply</h1>
+    <p>
+      Paste a support ticket (or pick an example) to see how TriageIQ would classify it, flag its
+      urgency, and draft a first-response reply for an agent to review. Nothing here is sent
+      anywhere — every draft requires an explicit agent decision.
+    </p>
+    <span class="badge">Simulated logic — see docs/eval-criteria.md for how it's designed</span>
+  </header>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Incoming ticket</h2>
+      <div class="presets" id="presets"></div>
+      <textarea id="ticketInput" placeholder="Paste or type a support ticket here…"></textarea>
+      <div class="actions">
+        <button class="primary-btn" id="analyzeBtn">Analyze ticket</button>
+        <button class="ghost-btn" id="clearBtn">Clear</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>TriageIQ result</h2>
+      <div id="resultArea">
+        <p class="result-empty">Analyze a ticket to see its category, urgency, and a draft reply here.</p>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    TriageIQ is a concept prototype built to accompany a PRD and eval-design writeup — see
+    <a href="../docs/PRD.md">the PRD</a>, <a href="../docs/eval-criteria.md">eval criteria</a>, and
+    <a href="../docs/roadmap.md">roadmap</a> in this repo.
+  </footer>
+</div>
+
+<script>
+(function () {
+  const PRESETS = [
+    "I was charged twice for my subscription this month",
+    "The app crashes every time I open the reports tab",
+    "How do I export my data to CSV?",
+    "I can't log in, it says my account is locked",
+    "Would be great if you added dark mode",
+    "URGENT — production data is missing since this morning, my whole team is blocked",
+    "This is the third time I've asked — still no response, extremely frustrated"
+  ];
+
+  const CATEGORY_RULES = [
+    { name: "Billing", keywords: ["charged", "refund", "subscription", "invoice", "payment", "billing", "charge"] },
+    { name: "Bug Report", keywords: ["crash", "crashes", "error", "bug", "broken", "500", "not working", "doesn't work", "missing", "stopped working"] },
+    { name: "How-To", keywords: ["how do i", "how to", "where do i", "where can i", "export", "documentation", "api docs", "csv"] },
+    { name: "Account Access", keywords: ["log in", "login", "locked", "password", "reset", "can't log in", "can't access"] },
+    { name: "Feature Request", keywords: ["would be great", "feature request", "suggest", "dark mode", "wish you", "please add"] }
+  ];
+
+  const BUSINESS_IMPACT = ["production", "blocked", "whole team", "can't work", "urgent", "asap", "immediately", "down", "locked"];
+  const FRUSTRATION = ["frustrated", "third time", "still no response", "unacceptable", "extremely"];
+
+  const DRAFT_TEMPLATES = {
+    "Billing": (t) => `Hi there,\n\nThanks for flagging this — I can see why an unexpected billing issue would be frustrating. I'm looking into your account now and will confirm the charge details and next steps (including a refund if applicable) shortly.\n\nBest,\nSupport Team`,
+    "Bug Report": (t) => `Hi there,\n\nThanks for the detailed report, and sorry for the disruption. I've logged this issue and I'm escalating it to our engineering team to investigate. I'll update you as soon as I have more information or a fix timeline.\n\nBest,\nSupport Team`,
+    "How-To": (t) => `Hi there,\n\nHappy to help! Here's how to do that: [step-by-step instructions would go here]. Let me know if you run into any issues following these steps.\n\nBest,\nSupport Team`,
+    "Account Access": (t) => `Hi there,\n\nSorry for the trouble getting into your account. I've taken a look and will help get this resolved — you should receive further instructions shortly. In the meantime, let me know if you don't see an update within a few minutes.\n\nBest,\nSupport Team`,
+    "Feature Request": (t) => `Hi there,\n\nThanks for the suggestion — I've shared this with our product team as a feature request. We can't guarantee timing, but feedback like this genuinely shapes our roadmap, so I appreciate you taking the time to share it.\n\nBest,\nSupport Team`,
+    "Other": (t) => `Hi there,\n\nThanks for reaching out. I want to make sure this gets to the right place — could you share a bit more detail on what you're running into? I'll make sure it's handled promptly.\n\nBest,\nSupport Team`
+  };
+
+  function classify(text) {
+    const lower = text.toLowerCase();
+    let best = { name: "Other", hits: [] };
+    let bestScore = 0;
+
+    CATEGORY_RULES.forEach((rule) => {
+      const hits = rule.keywords.filter((kw) => lower.includes(kw));
+      if (hits.length > bestScore) {
+        bestScore = hits.length;
+        best = { name: rule.name, hits };
+      }
+    });
+
+    return best;
+  }
+
+  function scoreUrgency(text) {
+    const lower = text.toLowerCase();
+    let score = 0;
+    const matched = [];
+
+    BUSINESS_IMPACT.forEach((kw) => {
+      if (lower.includes(kw)) { score += 2; matched.push(kw); }
+    });
+    FRUSTRATION.forEach((kw) => {
+      if (lower.includes(kw)) { score += 1; matched.push(kw); }
+    });
+    const exclaims = (text.match(/!/g) || []).length;
+    if (exclaims > 0) { score += exclaims * 0.5; matched.push(`${exclaims} exclamation mark(s)`); }
+
+    // Bug-report specific escalation: an active crash/outage reads as higher-urgency by default.
+    ["crash", "crashes", "500", "down", "missing"].forEach((kw) => {
+      if (lower.includes(kw)) { score += 1; matched.push(kw); }
+    });
+
+    let level = "Low";
+    if (score >= 2) level = "High";
+    else if (score >= 1) level = "Medium";
+
+    return { level, score, matched };
+  }
+
+  function render(ticketText) {
+    const resultArea = document.getElementById("resultArea");
+    const category = classify(ticketText);
+    const urgency = scoreUrgency(ticketText);
+    const draftFn = DRAFT_TEMPLATES[category.name] || DRAFT_TEMPLATES["Other"];
+    const draft = draftFn(ticketText);
+
+    const urgencyClass = "urgency-" + urgency.level.toLowerCase();
+    const whyBits = [];
+    whyBits.push(category.hits.length
+      ? `Category matched on: "${category.hits.join('", "')}"`
+      : `No strong topical keyword match — defaulted to Other`);
+    whyBits.push(urgency.matched.length
+      ? `Urgency signals: ${urgency.matched.join(", ")}`
+      : `Urgency signals: none detected`);
+
+    resultArea.innerHTML = `
+      <div class="tags">
+        <span class="tag category">${category.name}</span>
+        <span class="tag ${urgencyClass}">${urgency.level} urgency</span>
+      </div>
+      <div class="why">${whyBits.join(" · ")}</div>
+      <div class="draft-label">Suggested draft reply</div>
+      <div class="draft">${draft}</div>
+      <div class="draft-actions">
+        <button class="accept" id="acceptBtn">Accept as-is</button>
+        <button id="editBtn">Use &amp; edit</button>
+        <button class="reject" id="rejectBtn">Reject</button>
+      </div>
+      <div class="feedback-note" id="feedbackNote"></div>
+    `;
+
+    const note = document.getElementById("feedbackNote");
+    const wire = (id, label) => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("click", () => {
+        note.textContent = `Logged: agent chose "${label}" for this draft — this is exactly the kind of signal that feeds the eval loop described in docs/eval-criteria.md.`;
+      });
+    };
+    wire("acceptBtn", "Accept as-is");
+    wire("editBtn", "Use & edit");
+    wire("rejectBtn", "Reject");
+  }
+
+  const input = document.getElementById("ticketInput");
+  const presetsEl = document.getElementById("presets");
+
+  PRESETS.forEach((p) => {
+    const btn = document.createElement("button");
+    btn.textContent = p.length > 42 ? p.slice(0, 42) + "…" : p;
+    btn.title = p;
+    btn.addEventListener("click", () => { input.value = p; });
+    presetsEl.appendChild(btn);
+  });
+
+  document.getElementById("analyzeBtn").addEventListener("click", () => {
+    const text = input.value.trim();
+    if (!text) {
+      input.focus();
+      return;
+    }
+    render(text);
+  });
+
+  document.getElementById("clearBtn").addEventListener("click", () => {
+    input.value = "";
+    document.getElementById("resultArea").innerHTML =
+      '<p class="result-empty">Analyze a ticket to see its category, urgency, and a draft reply here.</p>';
+    input.focus();
+  });
+})();
+</script>
+</body>
+</html>
